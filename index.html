@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tamil Word of the Day</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    body { margin:0; min-height:100dvh; display:grid; place-items:center; background:#fafafa; color:#111; }
+    .card { background:#fff; padding:24px; border:1px solid #eee; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,.05); width:min(560px,92vw); }
+    h1 { margin:0 0 8px 0; font-size:clamp(20px,3.5vw,28px); }
+    .date { color:#666; font-size:14px; margin-bottom:16px; }
+    .ta { font-size:clamp(28px,8vw,48px); margin:8px 0 0 0; letter-spacing:.5px; }
+    .meta { margin-top:8px; color:#555; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-top:18px; }
+    button { border:1px solid #ddd; background:#fff; padding:8px 12px; border-radius:8px; cursor:pointer; }
+    button:hover { background:#f3f3f3; }
+    .foot { margin-top:18px; color:#888; font-size:12px; }
+    code { background:#f1f1f1; padding:2px 6px; border-radius:6px; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>இன்றைய சொல், Word of the Day</h1>
+    <div class="date" id="dateLine"></div>
+    <div class="ta" id="wordTa" aria-live="polite">...</div>
+    <div class="meta" id="wordMeta"></div>
+
+    <div class="row">
+      <button id="copyBtn" type="button">Copy word</button>
+    </div>
+
+  </main>
+
+  <script>
+    // 100 words: Tamil, transliteration, English
+    const WORDS = [
+      {ta:"மரம்", tr:"Maram", en:"Tree"},
+      {ta:"பூ", tr:"Poo", en:"Flower"},
+      {ta:"இலை", tr:"Ilai", en:"Leaf"},
+      {ta:"நதி", tr:"Nadhi", en:"River"},
+      {ta:"மலை", tr:"Malai", en:"Mountain"},
+      {ta:"கடல்", tr:"Kadal", en:"Sea"},
+      {ta:"நிலா", tr:"Nila", en:"Moon"},
+      {ta:"சூரியன்", tr:"Sooriyan", en:"Sun"},
+      {ta:"நட்சத்திரம்", tr:"Natchaththiram", en:"Star"},
+      {ta:"மழை", tr:"Mazhai", en:"Rain"},
+      {ta:"நாய்", tr:"Naai", en:"Dog"},
+      {ta:"பூனை", tr:"Poonai", en:"Cat"},
+      {ta:"யானை", tr:"Yaanai", en:"Elephant"},
+      {ta:"குதிரை", tr:"Kuthirai", en:"Horse"},
+      {ta:"மாடு", tr:"Maadu", en:"Cow"},
+      {ta:"ஆடு", tr:"Aadu", en:"Goat"},
+      {ta:"பறவை", tr:"Paravai", en:"Bird"},
+      {ta:"கிளி", tr:"Kili", en:"Parrot"},
+      {ta:"காகம்", tr:"Kaagam", en:"Crow"},
+      {ta:"மயில்", tr:"Mayil", en:"Peacock"},
+      {ta:"அரிசி", tr:"Arisi", en:"Rice"},
+      {ta:"சாதம்", tr:"Saadam", en:"Cooked rice"},
+      {ta:"பால்", tr:"Paal", en:"Milk"},
+      {ta:"தண்ணீர்", tr:"Thanneer", en:"Water"},
+      {ta:"தேநீர்", tr:"Thenir", en:"Tea"},
+      {ta:"பழம்", tr:"Pazham", en:"Fruit"},
+      {ta:"காய்", tr:"Kaai", en:"Vegetable"},
+      {ta:"ஆப்பிள்", tr:"Apple", en:"Apple"},
+      {ta:"வாழைப்பழம்", tr:"Vazhaipazham", en:"Banana"},
+      {ta:"மாம்பழம்", tr:"Maampazham", en:"Mango"},
+      {ta:"அம்மா", tr:"Amma", en:"Mother"},
+      {ta:"அப்பா", tr:"Appa", en:"Father"},
+      {ta:"தம்பி", tr:"Thambi", en:"Younger brother"},
+      {ta:"அக்கா", tr:"Akka", en:"Elder sister"},
+      {ta:"அண்ணன்", tr:"Annan", en:"Elder brother"},
+      {ta:"தங்கை", tr:"Thangai", en:"Younger sister"},
+      {ta:"பாட்டி", tr:"Paatti", en:"Grandmother"},
+      {ta:"தாத்தா", tr:"Thaaththa", en:"Grandfather"},
+      {ta:"நண்பன்", tr:"Nanban", en:"Friend, boy"},
+      {ta:"நண்பி", tr:"Nanbi", en:"Friend, girl"},
+      {ta:"பள்ளி", tr:"Palli", en:"School"},
+      {ta:"ஆசிரியர்", tr:"Aasiriyar", en:"Teacher"},
+      {ta:"புத்தகம்", tr:"Puthagam", en:"Book"},
+      {ta:"பேனா", tr:"Penna", en:"Pen"},
+      {ta:"பென்சில்", tr:"Pencil", en:"Pencil"},
+      {ta:"பலகை", tr:"Palagai", en:"Blackboard"},
+      {ta:"பாடம்", tr:"Paadam", en:"Lesson"},
+      {ta:"எழுத்து", tr:"Ezhuthu", en:"Letter"},
+      {ta:"எண்", tr:"Enn", en:"Number"},
+      {ta:"அறிவு", tr:"Arivu", en:"Knowledge"},
+      {ta:"கண்", tr:"Kan", en:"Eye"},
+      {ta:"மூக்கு", tr:"Mookku", en:"Nose"},
+      {ta:"வாய்", tr:"Vaai", en:"Mouth"},
+      {ta:"காது", tr:"Kaadhu", en:"Ear"},
+      {ta:"கை", tr:"Kai", en:"Hand"},
+      {ta:"கால்", tr:"Kaal", en:"Leg"},
+      {ta:"தலை", tr:"Thalai", en:"Head"},
+      {ta:"பல்", tr:"Pal", en:"Tooth"},
+      {ta:"முடி", tr:"Mudi", en:"Hair"},
+      {ta:"நெஞ்சு", tr:"Nenju", en:"Chest"},
+      {ta:"சிவப்பு", tr:"Sivappu", en:"Red"},
+      {ta:"நீலம்", tr:"Neelam", en:"Blue"},
+      {ta:"பச்சை", tr:"Pachchai", en:"Green"},
+      {ta:"மஞ்சள்", tr:"Manjal", en:"Yellow"},
+      {ta:"கருப்பு", tr:"Karuppu", en:"Black"},
+      {ta:"வெள்ளை", tr:"Vellai", en:"White"},
+      {ta:"வட்டம்", tr:"Vattam", en:"Circle"},
+      {ta:"சதுரம்", tr:"Sathuram", en:"Square"},
+      {ta:"முக்கோணம்", tr:"Mukkonam", en:"Triangle"},
+      {ta:"நீளம்", tr:"Neelam", en:"Length"},
+      {ta:"ஓடு", tr:"Odu", en:"Run"},
+      {ta:"நட", tr:"Nada", en:"Walk"},
+      {ta:"எழுது", tr:"Ezhudhu", en:"Write"},
+      {ta:"படி", tr:"Padi", en:"Study"},
+      {ta:"பாடு", tr:"Paadu", en:"Sing"},
+      {ta:"சிரி", tr:"Siri", en:"Laugh"},
+      {ta:"அழு", tr:"Azu", en:"Cry"},
+      {ta:"குடி", tr:"Kudi", en:"Drink"},
+      {ta:"சாப்பிடு", tr:"Saapidu", en:"Eat"},
+      {ta:"தூங்கு", tr:"Thoongu", en:"Sleep"},
+      {ta:"காலை", tr:"Kaalai", en:"Morning"},
+      {ta:"மதியம்", tr:"Mathiyam", en:"Afternoon"},
+      {ta:"மாலை", tr:"Maalai", en:"Evening"},
+      {ta:"இரவு", tr:"Iravu", en:"Night"},
+      {ta:"இன்று", tr:"Indru", en:"Today"},
+      {ta:"நேற்று", tr:"Netru", en:"Yesterday"},
+      {ta:"நாளை", tr:"Naalai", en:"Tomorrow"},
+      {ta:"மணி", tr:"Mani", en:"Hour, time"},
+      {ta:"நாள்", tr:"Naal", en:"Day"},
+      {ta:"ஆண்டு", tr:"Aandu", en:"Year"},
+      {ta:"அன்பு", tr:"Anbu", en:"Love"},
+      {ta:"மகிழ்ச்சி", tr:"Magizhchi", en:"Happiness"},
+      {ta:"துக்கம்", tr:"Thukkam", en:"Sadness"},
+      {ta:"துணிவு", tr:"Thunivu", en:"Courage"},
+      {ta:"நட்பு", tr:"Natpu", en:"Friendship"},
+      {ta:"உண்மை", tr:"Unmai", en:"Truth"},
+      {ta:"பொய்", tr:"Poi", en:"Lie"},
+      {ta:"ஒழுக்கம்", tr:"Ozhukkam", en:"Discipline"},
+      {ta:"அறிவுரை", tr:"Arivurai", en:"Advice"},
+      {ta:"அமைதி", tr:"Amaidhi", en:"Peace"}
+    ];
+
+    // Deterministic date key for Singapore time, format YYYY-MM-DD
+    function sgDateKey() {
+      const d = new Date();
+      return d.toLocaleDateString("en-CA", { timeZone: "Asia/Singapore" });
+      // en-CA gives ISO-like YYYY-MM-DD, which is easy to hash
+    }
+
+    // FNV-1a hash, maps string to 32-bit unsigned integer
+    function fnv1a(str) {
+      let h = 0x811c9dc5;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 0x01000193);
+      }
+      return h >>> 0;
+    }
+
+    function pickWordForDate(dateKey) {
+      const idx = fnv1a(dateKey) % WORDS.length;
+      return WORDS[idx];
+    }
+
+    function render() {
+      const key = sgDateKey();
+      const word = pickWordForDate(key);
+
+      // Display date in Singapore time for clarity
+      document.getElementById("dateLine").textContent =
+        new Date().toLocaleDateString("en-SG", {
+          weekday: "long", year: "numeric", month: "long", day: "numeric",
+          timeZone: "Asia/Singapore"
+        });
+
+      document.getElementById("wordTa").textContent = word.ta;
+      document.getElementById("wordMeta").textContent = `${word.tr} (${word.en})`;
+    }
+
+    async function copyWord() {
+      const ta = document.getElementById("wordTa").textContent.trim();
+      const meta = document.getElementById("wordMeta").textContent.trim();
+      const line = `${ta} - ${meta}`; // no em dashes
+      try {
+        await navigator.clipboard.writeText(line);
+        alert("Copied");
+      } catch {
+        const t = document.createElement("textarea");
+        t.value = line;
+        document.body.appendChild(t);
+        t.select();
+        document.execCommand("copy");
+        document.body.removeChild(t);
+        alert("Copied");
+      }
+    }
+
+    document.getElementById("copyBtn").addEventListener("click", copyWord);
+    render();
+  </script>
+</body>
+</html>
