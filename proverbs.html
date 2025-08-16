@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="ta">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tamil Word of the Day</title>
+    <style>
+      :root {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        background: #fafafa;
+        color: #111;
+      }
+      .card {
+        background: #fff;
+        padding: 24px;
+        border: 1px solid #eee;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        width: min(560px, 92vw);
+      }
+      h1 {
+        margin: 0 0 8px 0;
+        font-size: clamp(16px, 2.5vw, 24px);
+      }
+      .date {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 16px;
+      }
+      .ta {
+        font-size: clamp(20px, 3.5vw, 28px);
+        margin: 8px 0 0 0;
+        letter-spacing: 0.5px;
+      }
+      .meta {
+        margin-top: 8px;
+        color: #555;
+      }
+      .row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-top: 18px;
+      }
+      button {
+        border: 1px solid #ddd;
+        background: #fff;
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #f3f3f3;
+      }
+      .foot {
+        margin-top: 18px;
+        color: #888;
+        font-size: 12px;
+      }
+      code {
+        background: #f1f1f1;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h1>இன்றைய பழமொழி, Proverb of the Day</h1>
+      <div class="date" id="dateLine"></div>
+      <div class="ta" id="wordTa" aria-live="polite">...</div>
+      <div class="meta" id="wordMeta"></div>
+
+    </main>
+
+    <script>
+      // 100 words: Tamil, transliteration, English
+      const WORDS = [
+        {
+          ta: "காக்கைக்குத் தன்குஞ்சு பொன் குஞ்சு",
+          tr: "Kaakkaikkut than kunju pon kunju",
+          en: "To a crow, its chick is golden",
+        },
+        {
+          ta: "முட்டைக்குள் குஞ்சு",
+          tr: "Muttaikkul kunju",
+          en: "The chick is already in the egg",
+        },
+        {
+          ta: "வினை விதைத்தவன் வினை அறுப்பான்",
+          tr: "Vinai vithaiththavan vinai aruppaan",
+          en: "One who sows deeds will reap them",
+        },
+        {
+          ta: "பழம் பழுத்தால் பறவைகள் உண்டு",
+          tr: "Pazham pazhuthaal paravaigal undu",
+          en: "When fruit ripens, birds arrive",
+        },
+        {
+          ta: "கற்றது கைமண் அளவு, கல்லாதது உலகளவு",
+          tr: "Katrathu kaiman alavu, kallaathathu ulagalavu",
+          en: "What is learned is a handful, what is not, an ocean",
+        },
+        {
+          ta: "நாய் கண்ணை மூடினால் உலகம் இருட்டாகாது",
+          tr: "Naai kannai moodinaal ulagham iruttaagathu",
+          en: "If the dog closes its eyes, the world does not become dark",
+        },
+        {
+          ta: "பொறுத்தார் பூமி ஆள்வார்",
+          tr: "Poruththaar boomiy aalvaar",
+          en: "The patient rule the world",
+        },
+        {
+          ta: "ஆடு நனைகிறது என்று ஓநாய் அழுகிறதாம்",
+          tr: "Aadu nanaigiradhu endru oonai azhugiradham",
+          en: "The wolf laments saying the goat has been bathed",
+        },
+        {
+          ta: "தண்ணீர் வெந்நீர் ஆனாலும் நெருப்பை அணைக்கும்",
+          tr: "Thanneer vennir aanaalum neruppai anaikkum",
+          en: "Even hot water will extinguish fire",
+        },
+        {
+          ta: "அடி பறக்கும் முன் தடி பறக்கட்டும்",
+          tr: "Adi parakkum mun thadi parakkattum",
+          en: "Before a blow flies, let the slap fly",
+        },
+        {
+          ta: "நீர் இல்லையென்றால் பாலில் கஞ்சி செய்",
+          tr: "Neer illaiyenraal paalil kanji sey",
+          en: "If there’s no water, make porridge with milk",
+        },
+        {
+          ta: "உடைப்பழிவு செய்ய யானையும் விழும்",
+          tr: "Udaippazhivu seiyya yaanaaiyum vizhum",
+          en: "Even an elephant stumbles practicing fault-finding",
+        },
+        {
+          ta: "கிணற்றுக்குத் தப்பித் தீயிலே பாய்ந்தான்",
+          tr: "Kinattrukku thappith theeyilae paayndhaan",
+          en: "Escaped the well, jumped into the fire",
+        },
+        {
+          ta: "கேள்வி கேட்டவன் கேள்விக்குமேல் சென்று விடும்",
+          tr: "Kelvi kettavan kelvi kkumeel sendru vidum",
+          en: "The one who asks questions goes beyond the answer",
+        },
+        {
+          ta: "உறையில் உறங்காதவன் கனவை போவான்",
+          tr: "Uraiyil urangadhavan kanavai povaan",
+          en: "The one who doesn’t sleep in bed will chase dreams",
+        },
+        {
+          ta: "கத்துக்கொண்டவன் கதை சொல்லும்",
+          tr: "Kathukondavan kathai sollum",
+          en: "One who attains knowledge narrates tales",
+        },
+        {
+          ta: "பான் பஹர்கள் மாறினும் பழம் மாறாது",
+          tr: "Paan paharhal maarinum pazham maaradhu",
+          en: "Even if the wrapper changes, the fruit remains",
+        },
+        {
+          ta: "எரிகிற விட்டிலே பிடுங்குவது லாபம்",
+          tr: "Erigir vittile pidunguvadhu laabam",
+          en: "Whatever you salvage from a burning house is gain",
+        },
+        {
+          ta: "கவலை குற்றம் போல",
+          tr: "Kavalai kutram pola",
+          en: "Worry is like offense itself",
+        },
+        {
+          ta: "கேவை கொட்டிக்கொள்ள",
+          tr: "Keavai kottikolla",
+          en: "Pour sand before the elephant (i.e., think ahead)",
+        },
+        {
+          ta: "இயற் பொருள் நல்லது",
+          tr: "Iyar porul nalladhu",
+          en: "Good things come naturally",
+        },
+        {
+          ta: "இறங்கச்சொன்னால் நொண்டிக்குக் கோபம்",
+          tr: "Irangachchonnaal nondi ikkuk kobam",
+          en: "Ask the cripple to get down and he gets angry",
+        },
+        {
+          ta: "கண்டால் காமாச்சி நாயகர்",
+          tr: "Kandaal kaamaatchi naayagar",
+          en: "In front of you they praise as a king",
+        },
+        {
+          ta: "பால் சட்டிக்கு பூனை காவல் வைக்கிறதுபோல்",
+          tr: "Paal sattikku poonai kaaval vaikkiradhu pola",
+          en: "Like appointing a cat to guard the milk pot",
+        },
+        {
+          ta: "இறைவன் தான் அறியுமேல்",
+          tr: "Iraivan thaan ariyumeel",
+          en: "Only God knows what’s beyond knowledge",
+        },
+        {
+          ta: "சரித்திரத்தைத் தாண்டி செயல்படுக",
+          tr: "Sariththirathai thandi seyalpaduga",
+          en: "Act beyond your history (i.e., break the cycle)",
+        },
+        {
+          ta: "தீயினால் சுட்ட புண் ஆறும்",
+          tr: "Thee yinaal sutta pun aarum",
+          en: "Wound from fire heals, wound from words remains",
+        },
+        {
+          ta: "சோம்பலே சோறு இன்மைக்குப் பிதா",
+          tr: "Sombale soru inmaikkup pitha",
+          en: "Laziness is father of hunger",
+        },
+        {
+          ta: "நன்றி கற்றவர் நாளும் உயர்ந்து போர்",
+          tr: "Nanri katravar naalum uyarnthu poor",
+          en: "Those who learn gratitude rise daily",
+        },
+        {
+          ta: "நீறுகிறவன் நீரே வெல்லும்",
+          tr: "Neerukiravan neerae vellum",
+          en: "The persistent one overcomes water",
+        },
+        {
+          ta: "நடி நமக்கு நடுவ ளாய்",
+          tr: "Nadi namakku naduvazh maar",
+          en: "Be a bridge between enemies",
+        },
+        {
+          ta: "நாக்கிலே இருக்கிறது நன்மையும் தீமையும்",
+          tr: "Naakkile irukkiradhu nanmaiyum theema uyum",
+          en: "In the tongue lies both good and evil",
+        },
+        {
+          ta: "நான் பிடித்த முயலுக்கு மூன்றே கால்கள்",
+          tr: "Naan piditha muyalukku moondre kaalgal",
+          en: "My favorite rabbit has only three legs (i.e., showing favoritism blinds logic)",
+        },
+        {
+          ta: "பசிச்சவருக்கு ருசி தெரியாது",
+          tr: "Pasichchavarukku ruchi theriyadhu",
+          en: "The hungry don’t know taste",
+        },
+        {
+          ta: "பறவைக்கு பொன் ருசியா?",
+          tr: "Paravaikku pon rusiaa?",
+          en: "Is gold tasty to a bird?",
+        },
+        {
+          ta: "மண் குதிரையை நம்பி ஆற்றில் இறங்கலாமா?",
+          tr: "Man kuthirayai nambi aatril irangalaamaa?",
+          en: "Can you rely on a muddy horse to cross a river?",
+        },
+        {
+          ta: "முடியானது மூன்றுகாலடி நிமிடம்",
+          tr: "Mudiyanadhu moondru kaaladi nimidam",
+          en: "The shaved head stays three moments only",
+        },
+        {
+          ta: "வானம் தண்துளி தலைஇ யானாது",
+          tr: "Vaanam thandhuli thalai yaanadhu",
+          en: "Clouds carry rain on their heads but don’t slip",
+        },
+        {
+          ta: "வாழ்வோலம் மறக்கவி யா?",
+          tr: "Vazhvolam marakkaviyaa?",
+          en: "Can anyone forget their livelihood?",
+        },
+        {
+          ta: "வீழ்ச்சி எனக்கில்லை எனக்குத் தோல்வி மட்டுமே இருக்கிறது",
+          tr: "Veezhchi enakkillai enakkuth thohlvi mattume irukiradhu",
+          en: "I have no fall—only failure",
+        },
+        {
+          ta: "அரசன் காது குருடனின் கண்ணு போல",
+          tr: "Arasan kaadhu kurudan in kannu pola",
+          en: "A king’s ears are like a blind man’s eyes",
+        },
+        {
+          ta: "அன்பால் ஆனந்தம் உண்டாகும்",
+          tr: "Anbaal aanandham undaagum",
+          en: "Love brings joy",
+        },
+        {
+          ta: "ஆடு மேய்க்கும் ஆடவன் புலியைப் பயப்படான்",
+          tr: "Aadu meikkum aadavan puliyaip payappadaan",
+          en: "A shepherd does not fear the tiger",
+        },
+        {
+          ta: "இலக்கணம் அறியாத கல்வி குருட்டு",
+          tr: "Ilakkanam ariyaadha kalvi kuruttu",
+          en: "Education without grammar is blind",
+        },
+        {
+          ta: "இல்லாதவன் இன்பம் அறியான்",
+          tr: "Illaadhavan inbam ariyaan",
+          en: "One without wealth does not know pleasure",
+        },
+        {
+          ta: "ஈசனுக்குக் குரங்கு குடம் சுமக்கும்",
+          tr: "Eesanukkuk kurangu kudam sumakkum",
+          en: "Even a monkey serves the Lord",
+        },
+        {
+          ta: "உழுது பயிரிட்டால் உணவு கிடைக்கும்",
+          tr: "Uzhu thu payirittaal unavu kidaikkum",
+          en: "If you plough and sow, food will come",
+        },
+        {
+          ta: "எண்ணம் போல் வாழ்க்கை",
+          tr: "Ennam pol vaazhkkai",
+          en: "Life follows thoughts",
+        },
+        {
+          ta: "ஏணி இல்லாதவன் ஏற்றம் காணான்",
+          tr: "Eani illaadhavan aetrum kaanaan",
+          en: "Without a ladder, one cannot climb",
+        },
+        {
+          ta: "ஐந்து விரலும் ஒத்ததல்ல",
+          tr: "Aindhu viralum oththadalla",
+          en: "No five fingers are the same",
+        },
+
+        {
+          ta: "ஒன்றுபட்டால் உண்டு வாழ்வு",
+          tr: "Ondrupattaal undu vaazhvu",
+          en: "Unity ensures survival",
+        },
+        {
+          ta: "ஓடும் குதிரைக்கு ஏற்றம் குறைவு",
+          tr: "Oodum kuthiraikku aetrum kuraivu",
+          en: "For a running horse, height matters little",
+        },
+        {
+          ta: "ஔவை சொன்னால் உலகம் கேட்கும்",
+          tr: "Auvai sonnaal ulagham ketkum",
+          en: "If Avvaiyar speaks, the world listens",
+        },
+        {
+          ta: "கடல் ஆழம் கணக்கில்லை",
+          tr: "Kadal aazham kanakkillai",
+          en: "The depth of the sea cannot be measured",
+        },
+        {
+          ta: "கல் எடுத்தால் பாம்பு பாயும்",
+          tr: "Kal eduththaal paambu paayum",
+          en: "If you pick up a stone, the snake will strike",
+        },
+        {
+          ta: "காத்தது போல் காய்ந்தது இல்லை",
+          tr: "Kaaththadhu pol kaayndhathu illai",
+          en: "The awaited fruit never ripens as expected",
+        },
+        {
+          ta: "கிணற்றுக்குள் குதித்தான் மீன் பிடிக்கான்",
+          tr: "Kinattrukkul kudiththaan meen pidikkaan",
+          en: "Jumping into a well doesn’t catch fish",
+        },
+        {
+          ta: "கோழி குஞ்சு குருவி பறக்காது",
+          tr: "Kozhi kunju kuruvi parakkaadhu",
+          en: "A chick of a hen cannot fly like a sparrow",
+        },
+        {
+          ta: "சின்ன தவறு பெரிய தீமை",
+          tr: "Sinna thavaru periya theemai",
+          en: "A small mistake causes big harm",
+        },
+        {
+          ta: "சூது ஆடியவன் சோர்ந்து போவான்",
+          tr: "Soodhu aadiyavan soarnthu povaan",
+          en: "The gambler will collapse in the end",
+        },
+
+        {
+          ta: "செய்யும் தொழிலே தெய்வம்",
+          tr: "Seyyum thozhile dheivam",
+          en: "Work itself is God",
+        },
+        {
+          ta: "சிறு துளி பெரு வெள்ளம்",
+          tr: "Siru thuli peru vellam",
+          en: "Small drops make a flood",
+        },
+        {
+          ta: "சோம்பேறி சாப்பாட்டை இழக்கிறான்",
+          tr: "Somberi saappattai izhakkiraan",
+          en: "The lazy loses his food",
+        },
+        {
+          ta: "சூரியன் மறைந்தாலும் உலகம் நிற்காது",
+          tr: "Sooriyan maraindhaalum ulagham nirkaadhu",
+          en: "Even if the sun sets, the world does not stop",
+        },
+        {
+          ta: "தக்காளி பழுத்தால் பறவைகள் வரும்",
+          tr: "Thakkaali pazhuththaal paravaigal varum",
+          en: "When tomatoes ripen, birds arrive",
+        },
+        {
+          ta: "தண்ணீர் ஊற்றினால் தாவரம் வளரும்",
+          tr: "Thanneer ootrinaal thaavaram valarum",
+          en: "If watered, plants grow",
+        },
+        {
+          ta: "தாய் தந்தை வழி சொல் அருள்",
+          tr: "Thaai thandhai vazhi sol arul",
+          en: "Parents’ words are blessings",
+        },
+        {
+          ta: "தீயவன் அருகில் நல்லவன் அழுகான்",
+          tr: "Theeyavan arugil nallavan azhugaan",
+          en: "A good man suffers near an evil one",
+        },
+        {
+          ta: "தோன்றாத காயம் ஆறாது",
+          tr: "Thonraatha kaayam aaraadhu",
+          en: "An unseen wound never heals",
+        },
+        {
+          ta: "நல்லவன் நம்பிக்கை உயிர்",
+          tr: "Nallavan nambikkai uyir",
+          en: "Hope is life for the good",
+        },
+
+        {
+          ta: "நாய் சாப்பிட்டால் எலிக்கும் சாப்பாடு இல்லை",
+          tr: "Naai saappittaal elikkum saappadu illai",
+          en: "If the dog eats, the rat gets nothing",
+        },
+        {
+          ta: "நீர் ஓடினால் கல் உருகும்",
+          tr: "Neer oadinaal kal urugum",
+          en: "If water flows, even stone erodes",
+        },
+        {
+          ta: "நெஞ்சம் சுத்தமாயின் நல்லவை நடக்கும்",
+          tr: "Nenjam sutthamayin nallavai nadakkum",
+          en: "If the heart is pure, good things happen",
+        },
+        {
+          ta: "நேரம் பார்த்து செயல்",
+          tr: "Neram paarththu seyal",
+          en: "Act according to time",
+        },
+        {
+          ta: "பாம்பு பாய்ந்து பின் குச்சி",
+          tr: "Paambu paayndhu pin kuchchi",
+          en: "Stick after the snake has gone",
+        },
+        {
+          ta: "பசியோடு பயிர் இல்லை",
+          tr: "Pasi yodu payir illai",
+          en: "With hunger, no crop grows",
+        },
+        {
+          ta: "பழைய காயம் வலி தரும்",
+          tr: "Pazhaiya kaayam vali tharum",
+          en: "Old wounds still cause pain",
+        },
+        {
+          ta: "பிறர் துன்பம் கண்டான் பகைவன்",
+          tr: "Pirar thunbam kandaan pagaivan",
+          en: "One who rejoices in others’ misery is the enemy",
+        },
+        {
+          ta: "பொய்மை காலம் தாண்டாது",
+          tr: "Poimai kaalam thaandaadhu",
+          en: "Lies don’t last long",
+        },
+        {
+          ta: "போன பசு கொம்பு வளராது",
+          tr: "Pona pasu kombu valaraadhu",
+          en: "A lost cow’s horn won’t grow back",
+        },
+
+        {
+          ta: "மதி இல்லாதவன் மண் சாப்பிடுவான்",
+          tr: "Madhi illaadhavan man saappiduvaan",
+          en: "The foolish eat mud",
+        },
+        {
+          ta: "மலர் வாசனை அருகிலே",
+          tr: "Malar vaasanai arugilae",
+          en: "The fragrance of a flower is near",
+        },
+        {
+          ta: "மாடு மேயும் புல் வளரும்",
+          tr: "Maadu meyum pul valarum",
+          en: "Grazed grass still grows",
+        },
+        {
+          ta: "முயற்சி இருந்தால் முடியும்",
+          tr: "Muyarchi irundhaal mudiyum",
+          en: "With effort, it is possible",
+        },
+        {
+          ta: "முதல் அடியால் பயணம் தொடங்கும்",
+          tr: "Mudhal adiyaal payanam thodangum",
+          en: "A journey begins with the first step",
+        },
+        {
+          ta: "வசந்தம் வந்தால் மலர் மலரும்",
+          tr: "Vasantham vandhaal malar malarum",
+          en: "When spring arrives, flowers bloom",
+        },
+        {
+          ta: "வாழை மரம் காய்கிறது போல",
+          tr: "Vaazhai maram kaaykiradhu pola",
+          en: "Like a banana tree bearing fruit once",
+        },
+        {
+          ta: "வீண் சொல் விஷம் ஆகும்",
+          tr: "Veen sol visham aagum",
+          en: "Useless words become poison",
+        },
+        {
+          ta: "வேலன் வேலை பார்த்தால் விலங்கு ஓடும்",
+          tr: "Velan velaip paarththaal vilangu oodum",
+          en: "When the hunter works, animals flee",
+        },
+        {
+          ta: "வெற்றி முயற்சியால் வரும்",
+          tr: "Vettri muyarchiyaal varum",
+          en: "Success comes through effort",
+        },
+        {
+          ta: "அன்பு இல்லாதவன் ஆவி இல்லாதவன்",
+          tr: "Anbu illaadhavan aavi illaadhavan",
+          en: "Without love, life is soulless",
+        },
+        {
+          ta: "அரசியல் அறிந்தவன் அருளறியான்",
+          tr: "Arasiyal arindhavan arul ariyaan",
+          en: "One who knows politics does not know grace",
+        },
+        {
+          ta: "ஆழம் தெரிய கல்லை எறி",
+          tr: "Aazham theriy kallai eri",
+          en: "Throw a stone to test the depth",
+        },
+        {
+          ta: "ஆசை அதிகம் துன்பம் தரும்",
+          tr: "Aasai adhigam thunbam tharum",
+          en: "Excessive desire brings sorrow",
+        },
+        {
+          ta: "இல்லாதவன் இளமையும் இல்லையே",
+          tr: "Illaadhavan ilamaiyum illaiye",
+          en: "The poor man has no youth",
+        },
+        {
+          ta: "இறை நம்பினால் பயம் இல்லை",
+          tr: "Irai nambinaal payam illai",
+          en: "One who trusts God fears nothing",
+        },
+        {
+          ta: "ஈரம் காத்தால் ஈசன் காப்பான்",
+          tr: "Eeram kaaththaal eesan kaappaan",
+          en: "If you preserve moisture, God will protect",
+        },
+        { ta: "உழைப்பே உயிர்", tr: "Uzhaippe uyir", en: "Work is life" },
+        {
+          ta: "உண்மையே உயர்வு",
+          tr: "Unmaiye uyarvu",
+          en: "Truth is greatness",
+        },
+        {
+          ta: "எழுந்தருளும் சூரியன் தாமதம் செய்யான்",
+          tr: "Ezundharulum sooriyan thaamatham seiyaan",
+          en: "The rising sun does not delay",
+        },
+
+        {
+          ta: "எண்ணம் இருந்தால் வழி உண்டு",
+          tr: "Ennam irundhaal vazhi undu",
+          en: "Where there is will, there is a way",
+        },
+        {
+          ta: "ஏழையின் பசி எரியும் தீ",
+          tr: "Ezha iyin pasi eriyum thee",
+          en: "The hunger of the poor is a burning fire",
+        },
+        {
+          ta: "ஐந்தில் வளையாதது ஐம்பதில் வளையாது",
+          tr: "Aindhil valaiyaadhadhu aimpadhil valaiyaadhu",
+          en: "What does not bend at five, won’t bend at fifty",
+        },
+        {
+          ta: "ஒன்று சேர்ந்தால் ஓர் ஆயிரம்",
+          tr: "Ondru serndhaal or aayiram",
+          en: "Unity makes a thousand",
+        },
+        {
+          ta: "ஒளி மறைக்க முடியாது",
+          tr: "Oli maraikka mudiyadhu",
+          en: "Light cannot be hidden",
+        },
+        {
+          ta: "ஓடுகிற குதிரை தடம் விடாது",
+          tr: "Odugira kuthirai thadam vidaadhu",
+          en: "A running horse leaves no trail",
+        },
+        {
+          ta: "கடல் பார்த்தவன் கிணறு சிரிக்கிறான்",
+          tr: "Kadal paarththavan kinru sirikkiraan",
+          en: "One who has seen the sea laughs at the well",
+        },
+        {
+          ta: "கால் வழுக்கினால் உலகம் வழுக்கும்",
+          tr: "Kaal vazhukkinaal ulagham vazhukkum",
+          en: "If the foot slips, the world slips",
+        },
+        {
+          ta: "காடு காப்பவன் உலகம் காப்பான்",
+          tr: "Kaadu kaappavan ulagham kaappaan",
+          en: "He who protects the forest protects the world",
+        },
+        {
+          ta: "கற்றவன் கைம்மாறு அறிந்தான்",
+          tr: "Katravan kaimmaaru arindhaan",
+          en: "The learned knows gratitude",
+        },
+
+        {
+          ta: "கேட்கும் காது கற்பிக்கும் ஆசிரியன்",
+          tr: "Ketkum kaadhu karpikkum aasiriyan",
+          en: "A listening ear is a teacher",
+        },
+        {
+          ta: "சின்ன தீ பெரிய காடு எரிக்கும்",
+          tr: "Sinna thee periya kaadu erikkum",
+          en: "A small fire burns a big forest",
+        },
+        {
+          ta: "சிறு பிழை பெரிய தீமை",
+          tr: "Siru pizhai periya theemai",
+          en: "A small error brings great harm",
+        },
+        {
+          ta: "சோம்பேறிக்கு சோறு இன்மையே",
+          tr: "Somberikku soru inmai ye",
+          en: "The lazy will have no food",
+        },
+        {
+          ta: "சூரியன் மறைத்தால் நிலா உதிக்கும்",
+          tr: "Sooriyan maraitthaal nila udhikkum",
+          en: "When the sun sets, the moon rises",
+        },
+        {
+          ta: "செய்த நன்மை திரும்ப வரும்",
+          tr: "Seydha nanmai thirumba varum",
+          en: "Good deeds return",
+        },
+        {
+          ta: "சிறுகுருவி கூடம் கட்டும்",
+          tr: "Siru kuruvi koodam kattum",
+          en: "Even a sparrow builds a nest",
+        },
+        {
+          ta: "சுருங்கினாலும் சுட்டெரிக்கும்",
+          tr: "Surunginaalum sutterikkum",
+          en: "Even when small, fire burns",
+        },
+        {
+          ta: "தவம் செய்தவன் தெய்வம் ஆகிறான்",
+          tr: "Thavam seydhavan dheivam aagiraan",
+          en: "The one who meditates becomes divine",
+        },
+        {
+          ta: "தவறாது உழைத்தால் தானே வளம்",
+          tr: "Thavaraadhu uzhaiththaal thaane valam",
+          en: "Diligent work brings wealth",
+        },
+
+        {
+          ta: "தண்ணீர் துளி கல்லை உருக்கும்",
+          tr: "Thanneer thuli kallai urukkum",
+          en: "A drop of water pierces stone",
+        },
+        {
+          ta: "தாயின் பாசம் தெய்வ பாசம்",
+          tr: "Thaayin paasam dheiva paasam",
+          en: "A mother’s love is divine",
+        },
+        {
+          ta: "தீயவன் தீயில் விழுவான்",
+          tr: "Theeyavan theeyil vizhuvaan",
+          en: "The evil fall into fire",
+        },
+        {
+          ta: "தோற்றவன் தோற்றத்தை மறைக்கிறான்",
+          tr: "Thottravan thottraththai maraikkiraan",
+          en: "The defeated hides his loss",
+        },
+        {
+          ta: "நல்ல பிள்ளை நாட்டுக்கு செல்வம்",
+          tr: "Nalla pillai naattukku selvam",
+          en: "A good child is wealth to the nation",
+        },
+        {
+          ta: "நன்றி மறப்பவன் நரகத்துக்கேற்றவன்",
+          tr: "Nanri marappavan naragaththukkettravan",
+          en: "The ungrateful deserves hell",
+        },
+        {
+          ta: "நாய்க்கு எலும்பே விருந்து",
+          tr: "Naikku elumbe virundhu",
+          en: "For a dog, even a bone is a feast",
+        },
+        {
+          ta: "நீரில் விழுந்தவன் தண்ணீர் பிடிப்பான்",
+          tr: "Neeril vizhundhavan thanneer pidippaan",
+          en: "One who falls into water will clutch it",
+        },
+        {
+          ta: "நெஞ்சம் சுத்தமாயின் வாழ்வு சீராகும்",
+          tr: "Nenjam sutthamayin vaazhvu seeraagum",
+          en: "If the heart is pure, life prospers",
+        },
+        {
+          ta: "நேரம் பார்த்து நட",
+          tr: "Neram paarththu nada",
+          en: "Act according to time",
+        },
+
+        {
+          ta: "பசியோடு புல்லும் இனிமை",
+          tr: "Pasi yodu pullum inimai",
+          en: "With hunger, even grass tastes sweet",
+        },
+        {
+          ta: "பொய்மை நிற்காது",
+          tr: "Poimai nirkaadhu",
+          en: "Falsehood does not last",
+        },
+        {
+          ta: "பூக்கும் மலர் மணம் தரும்",
+          tr: "Pookkum malar manam tharum",
+          en: "A blooming flower gives fragrance",
+        },
+        {
+          ta: "பெருமை பொறுமையில் உள்ளது",
+          tr: "Perumai porumaiyil ulladhu",
+          en: "Greatness lies in patience",
+        },
+        {
+          ta: "மதி இல்லாதவன் மானம் இல்லான்",
+          tr: "Madhi illaadhavan maanam illaan",
+          en: "The foolish have no honor",
+        },
+        {
+          ta: "மருந்து அறிந்தவன் நோய் பயப்படான்",
+          tr: "Marundhu arindhavan noi payappadaan",
+          en: "The one who knows medicine fears no illness",
+        },
+        {
+          ta: "முடிவே முகம்",
+          tr: "Mudive mugam",
+          en: "The end is the face (the outcome defines)",
+        },
+        {
+          ta: "முன்னோர் சொல் பின்வரும் விளக்கு",
+          tr: "Munnoor sol pinvarum vilakku",
+          en: "The words of the elders are lamps",
+        },
+        {
+          ta: "வந்த வழி மறக்காதே",
+          tr: "Vandha vazhi marakkaadhe",
+          en: "Do not forget the path you came by",
+        },
+        {
+          ta: "வினை விதைத்தவன் பலன் அறுப்பான்",
+          tr: "Vinai vithaiththavan palan aruppaan",
+          en: "One who sows deeds reaps results",
+        },
+
+        {
+          ta: "அன்பு வளர்க்கும் உறவு",
+          tr: "Anbu valarkkum uravu",
+          en: "Love nurtures relationships",
+        },
+        {
+          ta: "அரசன் சொல் அமுதம்",
+          tr: "Arasan sol amudham",
+          en: "A king’s word is nectar",
+        },
+        {
+          ta: "ஆடு ஓடியது போல ஆள் ஓடினான்",
+          tr: "Aadu oadiyadhu pola aal oadinaan",
+          en: "The man ran like a goat",
+        },
+        {
+          ta: "ஆறாது காயம் நினைவில் இருக்கும்",
+          tr: "Aaraadhu kaayam ninaivil irukkum",
+          en: "An unhealed wound stays in memory",
+        },
+        {
+          ta: "இலக்கணம் கற்றவன் எழில் பெற்றவன்",
+          tr: "Ilakkanam katravan ezhil petravan",
+          en: "One who learns grammar gains beauty",
+        },
+        {
+          ta: "இறந்தோர் நினைவு நன்மை தரும்",
+          tr: "Irandhor ninaivu nanmai tharum",
+          en: "The memory of the dead gives virtue",
+        },
+        {
+          ta: "ஈரம் உள்ள பசு பால் தரும்",
+          tr: "Eeram ulla pasu paal tharum",
+          en: "A gentle cow gives milk",
+        },
+        {
+          ta: "உழைப்பவன் உண்ணும்",
+          tr: "Uzhaippavan unnum",
+          en: "The hardworking eat",
+        },
+        {
+          ta: "உண்மை மறைக்க முடியாது",
+          tr: "Unmai maraikka mudiyadhu",
+          en: "Truth cannot be hidden",
+        },
+        {
+          ta: "எழுந்தவன் எயிற்றில் சூரியன் உதிக்கும்",
+          tr: "Ezhnthavan eyittril sooriyan udhikkum",
+          en: "For the diligent, the sun rises early",
+        },
+
+        {
+          ta: "எண்ணம் நல்லது என்றால் பயம் இல்லை",
+          tr: "Ennam nalladhu endraal payam illai",
+          en: "With good intentions, there is no fear",
+        },
+        {
+          ta: "ஏழையின் கண்ணீர் தெய்வம் கேட்கும்",
+          tr: "Ezha iyin kannir dheivam ketkum",
+          en: "God hears the tears of the poor",
+        },
+        {
+          ta: "ஒன்று சேர்ந்தால் பலம்",
+          tr: "Ondru serndhaal palam",
+          en: "Unity is strength",
+        },
+        {
+          ta: "ஓடுகிறவன் வழி காண்பான்",
+          tr: "Odugiravan vazhi kaanbaan",
+          en: "The one who keeps running finds a path",
+        },
+        {
+          ta: "கடல் ஓரம் மணல் போல் மக்கள்",
+          tr: "Kadal ooram manal pol makkal",
+          en: "People are as numerous as the sand on the shore",
+        },
+        {
+          ta: "கட்டிய வீடு காப்பாற்ற வேண்டும்",
+          tr: "Kattiya veedu kaappaatra vendum",
+          en: "One must protect the house he built",
+        },
+        {
+          ta: "கால் எடுத்து வைக்கும்போது பார்த்து வை",
+          tr: "Kaal eduththu vaikumbodhu paarththu vai",
+          en: "Look before you place your step",
+        },
+        {
+          ta: "காடு வாழ்ந்தவன் காட்டு அறிவு கொண்டவன்",
+          tr: "Kaadu vaazhnthavan kaattu arivu kondavan",
+          en: "One who lives in the forest knows the forest",
+        },
+        {
+          ta: "கேள்வி கேட்பவன் கல்வி கற்றவன்",
+          tr: "Kelvi ketpavan kalvi katravan",
+          en: "One who asks is the one who learns",
+        },
+        {
+          ta: "சிறு பொய் பெரிய தீங்கு தரும்",
+          tr: "Siru poy periya theengu tharum",
+          en: "A small lie causes great harm",
+        },
+
+        {
+          ta: "செயல் நல்லது என்றால் பலன் நன்மை",
+          tr: "Seyal nalladhu endraal palan nanmai",
+          en: "Good deeds bring good results",
+        },
+        { ta: "சோம்பல் சாபம்", tr: "Sombal saabam", en: "Laziness is a curse" },
+        {
+          ta: "சூரியன் போல ஒளி பரப்பு",
+          tr: "Sooriyan pola oli parappu",
+          en: "Spread light like the sun",
+        },
+        {
+          ta: "சிரித்த முகம் சுகம் தரும்",
+          tr: "Siritha mugam sugam tharum",
+          en: "A smiling face brings comfort",
+        },
+        {
+          ta: "தவம் செய்தவன் தன்மையை அடைவர்",
+          tr: "Thavam seydhavan thanmaiyai adaivar",
+          en: "Those who meditate attain greatness",
+        },
+        {
+          ta: "தந்தை சொல் தெய்வ சொல்",
+          tr: "Thandhai sol dheiva sol",
+          en: "Father’s word is God’s word",
+        },
+        {
+          ta: "தீயவன் தீயில் எரியும்",
+          tr: "Theeyavan theeyil eriyum",
+          en: "The wicked burn in their own fire",
+        },
+        {
+          ta: "தோன்றும் தோற்றமே உண்மை அல்ல",
+          tr: "Thonrum thottrame unmai alla",
+          en: "Appearances are not always true",
+        },
+        {
+          ta: "நல்லவர் நாடு காப்பார்",
+          tr: "Nallavar naadu kaappaar",
+          en: "The good protect the nation",
+        },
+        {
+          ta: "நன்றி மறப்பது தீமை",
+          tr: "Nanri marappadhu theemai",
+          en: "Forgetting gratitude is evil",
+        },
+
+        {
+          ta: "நாய் நம்பினால் வீடு கெடும்",
+          tr: "Naai nambinaal veedu kedum",
+          en: "If you trust a dog, the house will fall",
+        },
+        {
+          ta: "நீர் சிந்தினால் விதை வளரும்",
+          tr: "Neer sindhinaal vidhai valarum",
+          en: "Seeds grow when watered",
+        },
+        {
+          ta: "நெஞ்சம் தூய்மையானால் நிம்மதி வரும்",
+          tr: "Nenjam thooymaiyaanaal nimmadhi varum",
+          en: "A pure heart brings peace",
+        },
+        {
+          ta: "நேரம் எல்லாவற்றையும் மாற்றும்",
+          tr: "Neram ellaavatraiyum maattrum",
+          en: "Time changes everything",
+        },
+        {
+          ta: "பசிக்குக் கஞ்சி இனிப்பு",
+          tr: "Pasikkuk kanji inippu",
+          en: "To the hungry, porridge is sweet",
+        },
+        {
+          ta: "பிறர் இன்பம் அறிந்தவன் பெரியவன்",
+          tr: "Pirar inbam arindhavan periyavan",
+          en: "One who knows others’ joy is noble",
+        },
+        {
+          ta: "பொய் சொல்லும் வாய்க்கு நாணம் இல்லை",
+          tr: "Poi sollum vaaykku naanam illai",
+          en: "The lying mouth knows no shame",
+        },
+        {
+          ta: "போனது போச்சு, வருவது நல்லது",
+          tr: "Ponaadhu poachchu, varuvadhu nalladhu",
+          en: "Let bygones be, what comes is good",
+        },
+        {
+          ta: "மதியில்லா மனிதன் மிருகம்",
+          tr: "Mathi illaa manithan mirugam",
+          en: "A man without sense is a beast",
+        },
+        {
+          ta: "மலர் கொடுத்தால் மணமும் வரும்",
+          tr: "Malar koduththaal manamum varum",
+          en: "Give flowers, fragrance will follow",
+        },
+
+        {
+          ta: "மாடு பசிக்கிறபோது புல் மதிப்பு பெறும்",
+          tr: "Maadu pasikkirapodhu pul mathippu perum",
+          en: "When the cow is hungry, grass has value",
+        },
+        {
+          ta: "முயற்சி செய்தால் முடிவு நல்லது",
+          tr: "Muyarchi seydhaal mudivu nalladhu",
+          en: "Effort ensures a good end",
+        },
+        {
+          ta: "முதல் கட்டம் மிக முக்கியம்",
+          tr: "Mudhal kattam miga mukkiyam",
+          en: "The first step is most important",
+        },
+        {
+          ta: "வாழ்வு வித்தை அறிவில் உள்ளது",
+          tr: "Vaazhvhu viththai arivil ulladhu",
+          en: "The art of life lies in knowledge",
+        },
+        {
+          ta: "வீடு காப்பவன் வாழ்க்கை காப்பான்",
+          tr: "Veedu kaappavan vaazhkkai kaappaan",
+          en: "One who protects his house protects his life",
+        },
+        {
+          ta: "வேலை செய்வான் வெற்றி காண்பான்",
+          tr: "Vela seivaan vettri kaanbaan",
+          en: "One who works achieves success",
+        },
+        {
+          ta: "வெற்றி உழைப்பால் வரும்",
+          tr: "Vettri uzhaippaala varum",
+          en: "Success comes through labor",
+        },
+        {
+          ta: "விரோதம் வளர்க்காதே",
+          tr: "Virodham valarkkaadhe",
+          en: "Do not nurture enmity",
+        },
+        {
+          ta: "விழுந்தவன் எழுந்து நிற்பான்",
+          tr: "Vizhundhavan ezhundhu nirpaan",
+          en: "He who falls will rise again",
+        },
+        {
+          ta: "வீணான பேச்சு தீமை தரும்",
+          tr: "Veenana paechchu theemai tharum",
+          en: "Useless talk causes harm",
+        },
+      ];
+
+      // Deterministic date key for Singapore time, format YYYY-MM-DD
+      function sgDateKey() {
+        const d = new Date();
+        return d.toLocaleDateString("en-CA", { timeZone: "Asia/Singapore" });
+        // en-CA gives ISO-like YYYY-MM-DD, which is easy to hash
+      }
+
+      // FNV-1a hash, maps string to 32-bit unsigned integer
+      function fnv1a(str) {
+        let h = 0x811c9dc5;
+        for (let i = 0; i < str.length; i++) {
+          h ^= str.charCodeAt(i);
+          h = Math.imul(h, 0x01000193);
+        }
+        return h >>> 0;
+      }
+
+      function pickWordForDate(dateKey) {
+        const idx = fnv1a(dateKey) % WORDS.length;
+        return WORDS[idx];
+      }
+
+      function render() {
+        const key = sgDateKey();
+        const word = pickWordForDate(key);
+
+        // Display date in Singapore time for clarity
+        document.getElementById("dateLine").textContent =
+          new Date().toLocaleDateString("en-SG", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            timeZone: "Asia/Singapore",
+          });
+
+        document.getElementById("wordTa").textContent = word.ta;
+        document.getElementById(
+          "wordMeta"
+        ).textContent = `${word.tr} (${word.en})`;
+      }
+
+      async function copyWord() {
+        const ta = document.getElementById("wordTa").textContent.trim();
+        const meta = document.getElementById("wordMeta").textContent.trim();
+        const line = `${ta} - ${meta}`; // no em dashes
+        try {
+          await navigator.clipboard.writeText(line);
+          alert("Copied");
+        } catch {
+          const t = document.createElement("textarea");
+          t.value = line;
+          document.body.appendChild(t);
+          t.select();
+          document.execCommand("copy");
+          document.body.removeChild(t);
+          alert("Copied");
+        }
+      }
+
+      document.getElementById("copyBtn").addEventListener("click", copyWord);
+      render();
+    </script>
+  </body>
+</html>

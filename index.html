@@ -1,199 +1,476 @@
 <!DOCTYPE html>
 <html lang="ta">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tamil Word of the Day</title>
-  <style>
-    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
-    body { margin:0; min-height:100dvh; display:grid; place-items:center; background:#fafafa; color:#111; }
-    .card { background:#fff; padding:24px; border:1px solid #eee; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,.05); width:min(560px,92vw); }
-    h1 { margin:0 0 8px 0; font-size:clamp(20px,3.5vw,28px); }
-    .date { color:#666; font-size:14px; margin-bottom:16px; }
-    .ta { font-size:clamp(28px,8vw,48px); margin:8px 0 0 0; letter-spacing:.5px; }
-    .meta { margin-top:8px; color:#555; }
-    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-top:18px; }
-    button { border:1px solid #ddd; background:#fff; padding:8px 12px; border-radius:8px; cursor:pointer; }
-    button:hover { background:#f3f3f3; }
-    .foot { margin-top:18px; color:#888; font-size:12px; }
-    code { background:#f1f1f1; padding:2px 6px; border-radius:6px; }
-  </style>
-</head>
-<body>
-  <main class="card">
-    <h1>இன்றைய சொல், Word of the Day</h1>
-    <div class="date" id="dateLine"></div>
-    <div class="ta" id="wordTa" aria-live="polite">...</div>
-    <div class="meta" id="wordMeta"></div>
-
-    <div class="row">
-      <button id="copyBtn" type="button">Copy word</button>
-    </div>
-
-  </main>
-
-  <script>
-    // 100 words: Tamil, transliteration, English
-    const WORDS = [
-      {ta:"மரம்", tr:"Maram", en:"Tree"},
-      {ta:"பூ", tr:"Poo", en:"Flower"},
-      {ta:"இலை", tr:"Ilai", en:"Leaf"},
-      {ta:"நதி", tr:"Nadhi", en:"River"},
-      {ta:"மலை", tr:"Malai", en:"Mountain"},
-      {ta:"கடல்", tr:"Kadal", en:"Sea"},
-      {ta:"நிலா", tr:"Nila", en:"Moon"},
-      {ta:"சூரியன்", tr:"Sooriyan", en:"Sun"},
-      {ta:"நட்சத்திரம்", tr:"Natchaththiram", en:"Star"},
-      {ta:"மழை", tr:"Mazhai", en:"Rain"},
-      {ta:"நாய்", tr:"Naai", en:"Dog"},
-      {ta:"பூனை", tr:"Poonai", en:"Cat"},
-      {ta:"யானை", tr:"Yaanai", en:"Elephant"},
-      {ta:"குதிரை", tr:"Kuthirai", en:"Horse"},
-      {ta:"மாடு", tr:"Maadu", en:"Cow"},
-      {ta:"ஆடு", tr:"Aadu", en:"Goat"},
-      {ta:"பறவை", tr:"Paravai", en:"Bird"},
-      {ta:"கிளி", tr:"Kili", en:"Parrot"},
-      {ta:"காகம்", tr:"Kaagam", en:"Crow"},
-      {ta:"மயில்", tr:"Mayil", en:"Peacock"},
-      {ta:"அரிசி", tr:"Arisi", en:"Rice"},
-      {ta:"சாதம்", tr:"Saadam", en:"Cooked rice"},
-      {ta:"பால்", tr:"Paal", en:"Milk"},
-      {ta:"தண்ணீர்", tr:"Thanneer", en:"Water"},
-      {ta:"தேநீர்", tr:"Thenir", en:"Tea"},
-      {ta:"பழம்", tr:"Pazham", en:"Fruit"},
-      {ta:"காய்", tr:"Kaai", en:"Vegetable"},
-      {ta:"ஆப்பிள்", tr:"Apple", en:"Apple"},
-      {ta:"வாழைப்பழம்", tr:"Vazhaipazham", en:"Banana"},
-      {ta:"மாம்பழம்", tr:"Maampazham", en:"Mango"},
-      {ta:"அம்மா", tr:"Amma", en:"Mother"},
-      {ta:"அப்பா", tr:"Appa", en:"Father"},
-      {ta:"தம்பி", tr:"Thambi", en:"Younger brother"},
-      {ta:"அக்கா", tr:"Akka", en:"Elder sister"},
-      {ta:"அண்ணன்", tr:"Annan", en:"Elder brother"},
-      {ta:"தங்கை", tr:"Thangai", en:"Younger sister"},
-      {ta:"பாட்டி", tr:"Paatti", en:"Grandmother"},
-      {ta:"தாத்தா", tr:"Thaaththa", en:"Grandfather"},
-      {ta:"நண்பன்", tr:"Nanban", en:"Friend, boy"},
-      {ta:"நண்பி", tr:"Nanbi", en:"Friend, girl"},
-      {ta:"பள்ளி", tr:"Palli", en:"School"},
-      {ta:"ஆசிரியர்", tr:"Aasiriyar", en:"Teacher"},
-      {ta:"புத்தகம்", tr:"Puthagam", en:"Book"},
-      {ta:"பேனா", tr:"Penna", en:"Pen"},
-      {ta:"பென்சில்", tr:"Pencil", en:"Pencil"},
-      {ta:"பலகை", tr:"Palagai", en:"Blackboard"},
-      {ta:"பாடம்", tr:"Paadam", en:"Lesson"},
-      {ta:"எழுத்து", tr:"Ezhuthu", en:"Letter"},
-      {ta:"எண்", tr:"Enn", en:"Number"},
-      {ta:"அறிவு", tr:"Arivu", en:"Knowledge"},
-      {ta:"கண்", tr:"Kan", en:"Eye"},
-      {ta:"மூக்கு", tr:"Mookku", en:"Nose"},
-      {ta:"வாய்", tr:"Vaai", en:"Mouth"},
-      {ta:"காது", tr:"Kaadhu", en:"Ear"},
-      {ta:"கை", tr:"Kai", en:"Hand"},
-      {ta:"கால்", tr:"Kaal", en:"Leg"},
-      {ta:"தலை", tr:"Thalai", en:"Head"},
-      {ta:"பல்", tr:"Pal", en:"Tooth"},
-      {ta:"முடி", tr:"Mudi", en:"Hair"},
-      {ta:"நெஞ்சு", tr:"Nenju", en:"Chest"},
-      {ta:"சிவப்பு", tr:"Sivappu", en:"Red"},
-      {ta:"நீலம்", tr:"Neelam", en:"Blue"},
-      {ta:"பச்சை", tr:"Pachchai", en:"Green"},
-      {ta:"மஞ்சள்", tr:"Manjal", en:"Yellow"},
-      {ta:"கருப்பு", tr:"Karuppu", en:"Black"},
-      {ta:"வெள்ளை", tr:"Vellai", en:"White"},
-      {ta:"வட்டம்", tr:"Vattam", en:"Circle"},
-      {ta:"சதுரம்", tr:"Sathuram", en:"Square"},
-      {ta:"முக்கோணம்", tr:"Mukkonam", en:"Triangle"},
-      {ta:"நீளம்", tr:"Neelam", en:"Length"},
-      {ta:"ஓடு", tr:"Odu", en:"Run"},
-      {ta:"நட", tr:"Nada", en:"Walk"},
-      {ta:"எழுது", tr:"Ezhudhu", en:"Write"},
-      {ta:"படி", tr:"Padi", en:"Study"},
-      {ta:"பாடு", tr:"Paadu", en:"Sing"},
-      {ta:"சிரி", tr:"Siri", en:"Laugh"},
-      {ta:"அழு", tr:"Azu", en:"Cry"},
-      {ta:"குடி", tr:"Kudi", en:"Drink"},
-      {ta:"சாப்பிடு", tr:"Saapidu", en:"Eat"},
-      {ta:"தூங்கு", tr:"Thoongu", en:"Sleep"},
-      {ta:"காலை", tr:"Kaalai", en:"Morning"},
-      {ta:"மதியம்", tr:"Mathiyam", en:"Afternoon"},
-      {ta:"மாலை", tr:"Maalai", en:"Evening"},
-      {ta:"இரவு", tr:"Iravu", en:"Night"},
-      {ta:"இன்று", tr:"Indru", en:"Today"},
-      {ta:"நேற்று", tr:"Netru", en:"Yesterday"},
-      {ta:"நாளை", tr:"Naalai", en:"Tomorrow"},
-      {ta:"மணி", tr:"Mani", en:"Hour, time"},
-      {ta:"நாள்", tr:"Naal", en:"Day"},
-      {ta:"ஆண்டு", tr:"Aandu", en:"Year"},
-      {ta:"அன்பு", tr:"Anbu", en:"Love"},
-      {ta:"மகிழ்ச்சி", tr:"Magizhchi", en:"Happiness"},
-      {ta:"துக்கம்", tr:"Thukkam", en:"Sadness"},
-      {ta:"துணிவு", tr:"Thunivu", en:"Courage"},
-      {ta:"நட்பு", tr:"Natpu", en:"Friendship"},
-      {ta:"உண்மை", tr:"Unmai", en:"Truth"},
-      {ta:"பொய்", tr:"Poi", en:"Lie"},
-      {ta:"ஒழுக்கம்", tr:"Ozhukkam", en:"Discipline"},
-      {ta:"அறிவுரை", tr:"Arivurai", en:"Advice"},
-      {ta:"அமைதி", tr:"Amaidhi", en:"Peace"}
-    ];
-
-    // Deterministic date key for Singapore time, format YYYY-MM-DD
-    function sgDateKey() {
-      const d = new Date();
-      return d.toLocaleDateString("en-CA", { timeZone: "Asia/Singapore" });
-      // en-CA gives ISO-like YYYY-MM-DD, which is easy to hash
-    }
-
-    // FNV-1a hash, maps string to 32-bit unsigned integer
-    function fnv1a(str) {
-      let h = 0x811c9dc5;
-      for (let i = 0; i < str.length; i++) {
-        h ^= str.charCodeAt(i);
-        h = Math.imul(h, 0x01000193);
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tamil Word of the Day</title>
+    <style>
+      :root {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
       }
-      return h >>> 0;
-    }
-
-    function pickWordForDate(dateKey) {
-      const idx = fnv1a(dateKey) % WORDS.length;
-      return WORDS[idx];
-    }
-
-    function render() {
-      const key = sgDateKey();
-      const word = pickWordForDate(key);
-
-      // Display date in Singapore time for clarity
-      document.getElementById("dateLine").textContent =
-        new Date().toLocaleDateString("en-SG", {
-          weekday: "long", year: "numeric", month: "long", day: "numeric",
-          timeZone: "Asia/Singapore"
-        });
-
-      document.getElementById("wordTa").textContent = word.ta;
-      document.getElementById("wordMeta").textContent = `${word.tr} (${word.en})`;
-    }
-
-    async function copyWord() {
-      const ta = document.getElementById("wordTa").textContent.trim();
-      const meta = document.getElementById("wordMeta").textContent.trim();
-      const line = `${ta} - ${meta}`; // no em dashes
-      try {
-        await navigator.clipboard.writeText(line);
-        alert("Copied");
-      } catch {
-        const t = document.createElement("textarea");
-        t.value = line;
-        document.body.appendChild(t);
-        t.select();
-        document.execCommand("copy");
-        document.body.removeChild(t);
-        alert("Copied");
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        background: #fafafa;
+        color: #111;
       }
-    }
+      .card {
+        background: #fff;
+        padding: 24px;
+        border: 1px solid #eee;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        width: min(560px, 92vw);
+      }
+      h1 {
+        margin: 0 0 8px 0;
+        font-size: clamp(20px, 3.5vw, 28px);
+      }
+      .date {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 16px;
+      }
+      .ta {
+        font-size: clamp(28px, 8vw, 48px);
+        margin: 8px 0 0 0;
+        letter-spacing: 0.5px;
+      }
+      .meta {
+        margin-top: 8px;
+        color: #555;
+      }
+      .row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-top: 18px;
+      }
+      button {
+        border: 1px solid #ddd;
+        background: #fff;
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #f3f3f3;
+      }
+      .foot {
+        margin-top: 18px;
+        color: #888;
+        font-size: 12px;
+      }
+      code {
+        background: #f1f1f1;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h1>இன்றைய சொல், Word of the Day</h1>
+      <div class="date" id="dateLine"></div>
+      <div class="ta" id="wordTa" aria-live="polite">...</div>
+      <div class="meta" id="wordMeta"></div>
 
-    document.getElementById("copyBtn").addEventListener("click", copyWord);
-    render();
-  </script>
-</body>
+      <div class="row">
+        <button id="copyBtn" type="button">Copy word</button>
+      </div>
+    </main>
+
+    <script>
+      // 100 words: Tamil, transliteration, English
+      const WORDS = [
+        { ta: "மரம்", tr: "Maram", en: "Tree" },
+        { ta: "பூ", tr: "Poo", en: "Flower" },
+        { ta: "இலை", tr: "Ilai", en: "Leaf" },
+        { ta: "நதி", tr: "Nadhi", en: "River" },
+        { ta: "மலை", tr: "Malai", en: "Mountain" },
+        { ta: "கடல்", tr: "Kadal", en: "Sea" },
+        { ta: "நிலா", tr: "Nila", en: "Moon" },
+        { ta: "சூரியன்", tr: "Sooriyan", en: "Sun" },
+        { ta: "நட்சத்திரம்", tr: "Natchaththiram", en: "Star" },
+        { ta: "மழை", tr: "Mazhai", en: "Rain" },
+        { ta: "நாய்", tr: "Naai", en: "Dog" },
+        { ta: "பூனை", tr: "Poonai", en: "Cat" },
+        { ta: "யானை", tr: "Yaanai", en: "Elephant" },
+        { ta: "குதிரை", tr: "Kuthirai", en: "Horse" },
+        { ta: "மாடு", tr: "Maadu", en: "Cow" },
+        { ta: "ஆடு", tr: "Aadu", en: "Goat" },
+        { ta: "பறவை", tr: "Paravai", en: "Bird" },
+        { ta: "கிளி", tr: "Kili", en: "Parrot" },
+        { ta: "காகம்", tr: "Kaagam", en: "Crow" },
+        { ta: "மயில்", tr: "Mayil", en: "Peacock" },
+        { ta: "அரிசி", tr: "Arisi", en: "Rice" },
+        { ta: "சாதம்", tr: "Saadam", en: "Cooked rice" },
+        { ta: "பால்", tr: "Paal", en: "Milk" },
+        { ta: "தண்ணீர்", tr: "Thanneer", en: "Water" },
+        { ta: "தேநீர்", tr: "Thenir", en: "Tea" },
+        { ta: "பழம்", tr: "Pazham", en: "Fruit" },
+        { ta: "காய்", tr: "Kaai", en: "Vegetable" },
+        { ta: "ஆப்பிள்", tr: "Apple", en: "Apple" },
+        { ta: "வாழைப்பழம்", tr: "Vazhaipazham", en: "Banana" },
+        { ta: "மாம்பழம்", tr: "Maampazham", en: "Mango" },
+        { ta: "அம்மா", tr: "Amma", en: "Mother" },
+        { ta: "அப்பா", tr: "Appa", en: "Father" },
+        { ta: "தம்பி", tr: "Thambi", en: "Younger brother" },
+        { ta: "அக்கா", tr: "Akka", en: "Elder sister" },
+        { ta: "அண்ணன்", tr: "Annan", en: "Elder brother" },
+        { ta: "தங்கை", tr: "Thangai", en: "Younger sister" },
+        { ta: "பாட்டி", tr: "Paatti", en: "Grandmother" },
+        { ta: "தாத்தா", tr: "Thaaththa", en: "Grandfather" },
+        { ta: "நண்பன்", tr: "Nanban", en: "Friend, boy" },
+        { ta: "நண்பி", tr: "Nanbi", en: "Friend, girl" },
+        { ta: "பள்ளி", tr: "Palli", en: "School" },
+        { ta: "ஆசிரியர்", tr: "Aasiriyar", en: "Teacher" },
+        { ta: "புத்தகம்", tr: "Puthagam", en: "Book" },
+        { ta: "பேனா", tr: "Penna", en: "Pen" },
+        { ta: "பென்சில்", tr: "Pencil", en: "Pencil" },
+        { ta: "பலகை", tr: "Palagai", en: "Blackboard" },
+        { ta: "பாடம்", tr: "Paadam", en: "Lesson" },
+        { ta: "எழுத்து", tr: "Ezhuthu", en: "Letter" },
+        { ta: "எண்", tr: "Enn", en: "Number" },
+        { ta: "அறிவு", tr: "Arivu", en: "Knowledge" },
+        { ta: "கண்", tr: "Kan", en: "Eye" },
+        { ta: "மூக்கு", tr: "Mookku", en: "Nose" },
+        { ta: "வாய்", tr: "Vaai", en: "Mouth" },
+        { ta: "காது", tr: "Kaadhu", en: "Ear" },
+        { ta: "கை", tr: "Kai", en: "Hand" },
+        { ta: "கால்", tr: "Kaal", en: "Leg" },
+        { ta: "தலை", tr: "Thalai", en: "Head" },
+        { ta: "பல்", tr: "Pal", en: "Tooth" },
+        { ta: "முடி", tr: "Mudi", en: "Hair" },
+        { ta: "நெஞ்சு", tr: "Nenju", en: "Chest" },
+        { ta: "சிவப்பு", tr: "Sivappu", en: "Red" },
+        { ta: "நீலம்", tr: "Neelam", en: "Blue" },
+        { ta: "பச்சை", tr: "Pachchai", en: "Green" },
+        { ta: "மஞ்சள்", tr: "Manjal", en: "Yellow" },
+        { ta: "கருப்பு", tr: "Karuppu", en: "Black" },
+        { ta: "வெள்ளை", tr: "Vellai", en: "White" },
+        { ta: "வட்டம்", tr: "Vattam", en: "Circle" },
+        { ta: "சதுரம்", tr: "Sathuram", en: "Square" },
+        { ta: "முக்கோணம்", tr: "Mukkonam", en: "Triangle" },
+        { ta: "நீளம்", tr: "Neelam", en: "Length" },
+        { ta: "ஓடு", tr: "Odu", en: "Run" },
+        { ta: "நட", tr: "Nada", en: "Walk" },
+        { ta: "எழுது", tr: "Ezhudhu", en: "Write" },
+        { ta: "படி", tr: "Padi", en: "Study" },
+        { ta: "பாடு", tr: "Paadu", en: "Sing" },
+        { ta: "சிரி", tr: "Siri", en: "Laugh" },
+        { ta: "அழு", tr: "Azu", en: "Cry" },
+        { ta: "குடி", tr: "Kudi", en: "Drink" },
+        { ta: "சாப்பிடு", tr: "Saapidu", en: "Eat" },
+        { ta: "தூங்கு", tr: "Thoongu", en: "Sleep" },
+        { ta: "காலை", tr: "Kaalai", en: "Morning" },
+        { ta: "மதியம்", tr: "Mathiyam", en: "Afternoon" },
+        { ta: "மாலை", tr: "Maalai", en: "Evening" },
+        { ta: "இரவு", tr: "Iravu", en: "Night" },
+        { ta: "இன்று", tr: "Indru", en: "Today" },
+        { ta: "நேற்று", tr: "Netru", en: "Yesterday" },
+        { ta: "நாளை", tr: "Naalai", en: "Tomorrow" },
+        { ta: "மணி", tr: "Mani", en: "Hour, time" },
+        { ta: "நாள்", tr: "Naal", en: "Day" },
+        { ta: "ஆண்டு", tr: "Aandu", en: "Year" },
+        { ta: "அன்பு", tr: "Anbu", en: "Love" },
+        { ta: "மகிழ்ச்சி", tr: "Magizhchi", en: "Happiness" },
+        { ta: "துக்கம்", tr: "Thukkam", en: "Sadness" },
+        { ta: "துணிவு", tr: "Thunivu", en: "Courage" },
+        { ta: "நட்பு", tr: "Natpu", en: "Friendship" },
+        { ta: "உண்மை", tr: "Unmai", en: "Truth" },
+        { ta: "பொய்", tr: "Poi", en: "Lie" },
+        { ta: "ஒழுக்கம்", tr: "Ozhukkam", en: "Discipline" },
+        { ta: "அறிவுரை", tr: "Arivurai", en: "Advice" },
+        { ta: "அமைதி", tr: "Amaidhi", en: "Peace" },
+        { ta: "வானவில்", tr: "Vaanavil", en: "Rainbow" },
+        { ta: "மின்னல்", tr: "Minnal", en: "Lightning" },
+        { ta: "இடி", tr: "Idi", en: "Thunder" },
+        { ta: "காற்று", tr: "Kaatru", en: "Wind" },
+        { ta: "மேகம்", tr: "Megam", en: "Cloud" },
+        { ta: "அலை", tr: "Alai", en: "Wave" },
+        { ta: "காடு", tr: "Kaadu", en: "Forest" },
+        { ta: "வனாந்தரம்", tr: "Vanaantharam", en: "Wilderness" },
+        { ta: "வெள்ளம்", tr: "Vellam", en: "Flood" },
+        { ta: "வறட்சி", tr: "Varatchi", en: "Drought" },
+        { ta: "வெப்பம்", tr: "Veppam", en: "Heat" },
+        { ta: "சீற்றம்", tr: "Seetram", en: "Storm" },
+        { ta: "மண்", tr: "Mann", en: "Soil" },
+        { ta: "பாறை", tr: "Paarai", en: "Rock" },
+        { ta: "குகை", tr: "Kugai", en: "Cave" },
+        { ta: "பாலைவனம்", tr: "Palaivanam", en: "Desert" },
+        { ta: "தீவு", tr: "Theevu", en: "Island" },
+        { ta: "குன்று", tr: "Kundru", en: "Hill" },
+        { ta: "புல்", tr: "Pul", en: "Grass" },
+        { ta: "வேர்கள்", tr: "Vergal", en: "Roots" },
+        { ta: "மொட்டு", tr: "Mottu", en: "Bud" },
+        { ta: "தண்டு", tr: "Thandu", en: "Stem" },
+        { ta: "விதை", tr: "Vidhai", en: "Seed" },
+        { ta: "சிகரம்", tr: "Sigaram", en: "Peak" },
+        { ta: "சுரங்கம்", tr: "Surangam", en: "Tunnel" },
+        { ta: "விழுந்து", tr: "Vizhundu", en: "Fall down" },
+        { ta: "ஏறு", tr: "Eru", en: "Climb" },
+        { ta: "மிதி", tr: "Mithi", en: "Step on" },
+        { ta: "குதிப்பு", tr: "Kudhippu", en: "Jump" },
+        { ta: "நீந்து", tr: "Neendhu", en: "Swim" },
+        { ta: "மிதவை", tr: "Mithavai", en: "Float" },
+        { ta: "மூழ்கு", tr: "Moolgu", en: "Sink" },
+        { ta: "சுருக்கு", tr: "Surukku", en: "Fold" },
+        { ta: "விரித்து", tr: "Viriththu", en: "Spread" },
+        { ta: "இழுத்து", tr: "Izhuththu", en: "Pull" },
+        { ta: "தள்ளு", tr: "Thallu", en: "Push" },
+        { ta: "சுழற்று", tr: "Suzhaththu", en: "Rotate" },
+        { ta: "சாய்வு", tr: "Saivu", en: "Lean" },
+        { ta: "தாண்டு", tr: "Thaandu", en: "Cross" },
+        { ta: "வெட்டு", tr: "Vettu", en: "Cut" },
+        { ta: "உதிரி", tr: "Uthiri", en: "Scatter" },
+        { ta: "சூடு", tr: "Soodu", en: "Heat" },
+        { ta: "உறை", tr: "Urai", en: "Freeze" },
+        { ta: "அருவி", tr: "Aruvi", en: "Waterfall" },
+        { ta: "பாலம்", tr: "Paalam", en: "Bridge" },
+        { ta: "சாலை", tr: "Saalaai", en: "Road" },
+        { ta: "வண்டி", tr: "Vandi", en: "Cart/Vehicle" },
+        { ta: "ரயில்", tr: "Rayil", en: "Train" },
+        { ta: "விமானம்", tr: "Vimaanam", en: "Airplane" },
+        { ta: "கப்பல்", tr: "Kappal", en: "Ship" },
+        { ta: "பேருந்து", tr: "Perunthu", en: "Bus" },
+        { ta: "மிதிவண்டி", tr: "Mithivandi", en: "Bicycle" },
+        { ta: "தொலைபேசி", tr: "Tholaipesi", en: "Telephone" },
+        { ta: "மின்சாரம்", tr: "Minsaaram", en: "Electricity" },
+        { ta: "ஒளி", tr: "Oli", en: "Light" },
+        { ta: "நிழல்", tr: "Nizhal", en: "Shadow" },
+        { ta: "வெப்பநிலை", tr: "Veppanilai", en: "Temperature" },
+        { ta: "காற்றழுத்தம்", tr: "Kaatrzhuththam", en: "Air pressure" },
+        { ta: "வானிலை", tr: "Vaanilai", en: "Weather" },
+        { ta: "ஆற்றல்", tr: "Aatral", en: "Energy" },
+        { ta: "வலி", tr: "Vali", en: "Pain" },
+        { ta: "ஆரோக்கியம்", tr: "Aarokkiyam", en: "Health" },
+        { ta: "நோய்", tr: "Noi", en: "Disease" },
+        { ta: "மருந்து", tr: "Marundhu", en: "Medicine" },
+        { ta: "சிகிச்சை", tr: "Sigichchai", en: "Treatment" },
+        { ta: "மருத்துவர்", tr: "Maruththuwar", en: "Doctor" },
+        { ta: "அவசரம்", tr: "Avasaram", en: "Urgency" },
+        { ta: "மூச்சு", tr: "Moochu", en: "Breath" },
+        { ta: "இதயம்", tr: "Idhayam", en: "Heart" },
+        { ta: "அரத்தம்", tr: "Aratham", en: "Blood" },
+        { ta: "உடல்", tr: "Udal", en: "Body" },
+        { ta: "சொறி", tr: "Sori", en: "Skin" },
+        { ta: "வயிறு", tr: "Vayiru", en: "Stomach" },
+        { ta: "முதுகு", tr: "Mudugu", en: "Back" },
+        { ta: "எலும்பு", tr: "Elumbu", en: "Bone" },
+        { ta: "சதை", tr: "Sathai", en: "Flesh" },
+        { ta: "உணர்ச்சி", tr: "Unarchchi", en: "Emotion" },
+        { ta: "ஆச்சரியம்", tr: "Aachariyam", en: "Surprise" },
+        { ta: "கோபம்", tr: "Kobam", en: "Anger" },
+        { ta: "பயம்", tr: "Bayam", en: "Fear" },
+        { ta: "வெட்கம்", tr: "Vetkam", en: "Shyness" },
+        { ta: "அருள்", tr: "Arul", en: "Grace" },
+        { ta: "பொறுமை", tr: "Porumai", en: "Patience" },
+        { ta: "நம்பிக்கை", tr: "Nambikkai", en: "Hope" },
+        { ta: "விருப்பு", tr: "Viruppu", en: "Liking" },
+        { ta: "வெறுப்பு", tr: "Veruppu", en: "Dislike" },
+        { ta: "அவமானம்", tr: "Avamaanam", en: "Humiliation" },
+        { ta: "மதிப்பு", tr: "Madhippu", en: "Respect" },
+        { ta: "துணை", tr: "Thunai", en: "Support" },
+        { ta: "ஆசை", tr: "Aasai", en: "Desire" },
+        { ta: "விருப்பம்", tr: "Viruppam", en: "Preference" },
+        { ta: "சுதந்திரம்", tr: "Sudhandhiram", en: "Freedom" },
+        { ta: "சமநிலை", tr: "Samanilai", en: "Balance" },
+        { ta: "செயல்", tr: "Seyal", en: "Action" },
+        { ta: "கலை", tr: "Kalai", en: "Art" },
+        { ta: "இசை", tr: "Isai", en: "Music" },
+        { ta: "நடனம்", tr: "Nadanam", en: "Dance" },
+        { ta: "கதை", tr: "Kathai", en: "Story" },
+        { ta: "கவிதை", tr: "Kavithai", en: "Poem" },
+        { ta: "படம்", tr: "Padam", en: "Picture" },
+        { ta: "ஓவியம்", tr: "Oviyam", en: "Painting" },
+        { ta: "நாடகம்", tr: "Naadagam", en: "Drama" },
+        { ta: "திரைப்படம்", tr: "Thiraippadam", en: "Movie" },
+        { ta: "விளையாட்டு", tr: "Vilayaattu", en: "Game" },
+        { ta: "கிரிக்கெட்", tr: "Cricket", en: "Cricket" },
+        { ta: "கால்பந்து", tr: "Kaalpandu", en: "Football" },
+        { ta: "வாலிபால்", tr: "Volleyball", en: "Volleyball" },
+        { ta: "வாலிபர்", tr: "Vaalibar", en: "Youth" },
+        { ta: "பெண்கள்", tr: "Pengal", en: "Girls" },
+        { ta: "சமூகம்", tr: "Samugam", en: "Society" },
+        { ta: "பண்பாடு", tr: "Panpaadu", en: "Culture" },
+        { ta: "சடங்கு", tr: "Saduangu", en: "Ritual" },
+        { ta: "திருவிழா", tr: "Thiruvizha", en: "Festival" },
+        { ta: "பண்டிகை", tr: "Pandigai", en: "Celebration" },
+        { ta: "ஆலயம்", tr: "Aalayam", en: "Temple" },
+        { ta: "சங்கிலி", tr: "Sangili", en: "Chain" },
+        { ta: "மாலை", tr: "Maalai", en: "Garland" },
+        { ta: "தீபம்", tr: "Theepam", en: "Lamp" },
+        { ta: "பூஜை", tr: "Poojai", en: "Worship" },
+        { ta: "வேதம்", tr: "Vedham", en: "Veda" },
+        { ta: "பிரார்த்தனை", tr: "Prarthanai", en: "Prayer" },
+        { ta: "இறை", tr: "Irai", en: "God" },
+        { ta: "ஆசிர்வாதம்", tr: "Aasirvaadham", en: "Blessing" },
+        { ta: "மந்திரம்", tr: "Mandhiram", en: "Mantra" },
+        { ta: "வழிபாடு", tr: "Vazhipaadu", en: "Devotion" },
+        { ta: "நம்பிக்கை", tr: "Nambikkai", en: "Faith" },
+        { ta: "தர்மம்", tr: "Dharmam", en: "Righteousness" },
+        { ta: "சத்தியம்", tr: "Saththiyam", en: "Oath" },
+        { ta: "வாழ்க்கை", tr: "Vaazhkkai", en: "Life" },
+        { ta: "இறப்பு", tr: "Irappu", en: "Death" },
+        { ta: "பிறப்பு", tr: "Pirappu", en: "Birth" },
+        { ta: "காலம்", tr: "Kaalam", en: "Time" },
+        { ta: "எதிர்காலம்", tr: "Ethirkaalam", en: "Future" },
+        { ta: "கடந்தகாலம்", tr: "Kadanthakaalam", en: "Past" },
+        { ta: "தற்போது", tr: "Tharpoathu", en: "Present" },
+        { ta: "வரலாறு", tr: "Varalaaru", en: "History" },
+        { ta: "புராணம்", tr: "Puranam", en: "Legend" },
+        { ta: "காவியம்", tr: "Kaaviyam", en: "Epic" },
+        { ta: "சிந்தனை", tr: "Sinthanai", en: "Thought" },
+        { ta: "கருத்து", tr: "Karuthu", en: "Idea" },
+        { ta: "கனவு", tr: "Kanavu", en: "Dream" },
+        { ta: "நினைவு", tr: "Ninaivu", en: "Memory" },
+        { ta: "முடிவு", tr: "Mudivu", en: "Decision" },
+        { ta: "திட்டம்", tr: "Thittam", en: "Plan" },
+        { ta: "வாய்ப்பு", tr: "Vaayppu", en: "Opportunity" },
+        { ta: "பிரச்சனை", tr: "Pirachchanai", en: "Problem" },
+        { ta: "தீர்வு", tr: "Theervu", en: "Solution" },
+        { ta: "வெற்றி", tr: "Vettri", en: "Success" },
+        { ta: "தோல்வி", tr: "Tholvii", en: "Failure" },
+        { ta: "போராட்டம்", tr: "Poraattam", en: "Struggle" },
+        { ta: "சாதனை", tr: "Saadhanai", en: "Achievement" },
+        { ta: "முயற்சி", tr: "Muyarchchi", en: "Effort" },
+        { ta: "அரசியல்", tr: "Arasiyal", en: "Politics" },
+        { ta: "நாடு", tr: "Naadu", en: "Country" },
+        { ta: "மாநிலம்", tr: "Maanilam", en: "State" },
+        { ta: "கிராமம்", tr: "Kiraamam", en: "Village" },
+        { ta: "நகரம்", tr: "Nagaram", en: "City" },
+        { ta: "தலைநகர்", tr: "Thalainagar", en: "Capital" },
+        { ta: "அரசு", tr: "Arasu", en: "Government" },
+        { ta: "சட்டம்", tr: "Sattam", en: "Law" },
+        { ta: "அரசர்", tr: "Arasar", en: "King" },
+        { ta: "இளவரசர்", tr: "Ilavarasar", en: "Prince" },
+        { ta: "ராணி", tr: "Raani", en: "Queen" },
+        { ta: "படை", tr: "Padai", en: "Army" },
+        { ta: "போர்வீரன்", tr: "Porveeran", en: "Warrior" },
+        { ta: "கோட்டை", tr: "Kottai", en: "Fort" },
+        { ta: "அம்பு", tr: "Ambu", en: "Arrow" },
+        { ta: "வாள்", tr: "Vaal", en: "Sword" },
+        { ta: "கேடயம்", tr: "Kedayam", en: "Shield" },
+        { ta: "படகு", tr: "Padagu", en: "Boat" },
+        { ta: "அறிஞர்", tr: "Arignar", en: "Scholar" },
+        { ta: "கவிஞர்", tr: "Kavignar", en: "Poet" },
+        { ta: "பாடகர்", tr: "Paadagar", en: "Singer" },
+        { ta: "நடிகர்", tr: "Nadigar", en: "Actor" },
+        { ta: "விஞ்ஞானி", tr: "Vignaani", en: "Scientist" },
+        { ta: "ஆசிரியர்", tr: "Aasiriyar", en: "Author" },
+        { ta: "தொழில்", tr: "Thozhil", en: "Profession" },
+        { ta: "விவசாயி", tr: "Vivasayi", en: "Farmer" },
+        { ta: "மீனவர்", tr: "Meenavar", en: "Fisherman" },
+        { ta: "கடைமான்", tr: "Kadaimaan", en: "Shopkeeper" },
+        { ta: "சமையல்காரர்", tr: "Samayalkaarar", en: "Cook" },
+        { ta: "மருத்துவர்", tr: "Maruththuwar", en: "Doctor" },
+        { ta: "பொறியாளர்", tr: "Poriyalaalar", en: "Engineer" },
+        { ta: "ஆசிரியர்", tr: "Aasiriyar", en: "Teacher" },
+        { ta: "நீதிபதி", tr: "Neethipathi", en: "Judge" },
+        { ta: "காவலர்", tr: "Kaavalar", en: "Police" },
+        { ta: "படைவீரர்", tr: "Padaiveerar", en: "Soldier" },
+        { ta: "வணிகர்", tr: "Vanigar", en: "Merchant" },
+        { ta: "கலைஞர்", tr: "Kalaignar", en: "Artist" },
+        { ta: "புத்திசாலி", tr: "Puththisaali", en: "Clever" },
+        { ta: "அழகு", tr: "Azhagu", en: "Beauty" },
+        { ta: "அமைப்பு", tr: "Amaippu", en: "Organization" },
+        { ta: "ஒன்றியம்", tr: "Ondriyam", en: "Union" },
+        { ta: "தொடக்கம்", tr: "Thodakkam", en: "Beginning" },
+        { ta: "முடிவு", tr: "Mudivu", en: "End" },
+        { ta: "நுழைவு", tr: "Nuzhaivu", en: "Entrance" },
+        { ta: "வெளியேறு", tr: "Veliyeru", en: "Exit" },
+        { ta: "தடை", tr: "Thadai", en: "Obstacle" },
+        { ta: "அனுமதி", tr: "Anumathi", en: "Permission" },
+        { ta: "உத்தரவு", tr: "Uththaravu", en: "Order" },
+        { ta: "ஆணை", tr: "Aanaai", en: "Command" },
+        { ta: "அறிக்கை", tr: "Arikkai", en: "Report" },
+        { ta: "செய்தி", tr: "Seythi", en: "News" },
+        { ta: "பத்திரிகை", tr: "Paththirigai", en: "Newspaper" },
+        { ta: "வானொலி", tr: "Vaanoli", en: "Radio" },
+        { ta: "தொலைக்காட்சி", tr: "Tholaikkaatchi", en: "Television" },
+        { ta: "நாடுகள்", tr: "Naadugal", en: "Nations" },
+        { ta: "உலகம்", tr: "Ulagam", en: "World" },
+        { ta: "பூமி", tr: "Boomi", en: "Earth" },
+        { ta: "சந்திரன்", tr: "Chandhiran", en: "Moon" },
+        { ta: "கிரகம்", tr: "Kiragam", en: "Planet" },
+        { ta: "பிரபஞ்சம்", tr: "Pirapanjam", en: "Universe" },
+        { ta: "விண்வெளி", tr: "Vinnveli", en: "Space" },
+        { ta: "கோளம்", tr: "Kolam", en: "Sphere" },
+        { ta: "விண்கலம்", tr: "Vinnkalam", en: "Spaceship" },
+        { ta: "விண்வெளி வீரர்", tr: "Vinnveli Veerar", en: "Astronaut" },
+        {
+          ta: "நட்சத்திரக் கூட்டம்",
+          tr: "Natchaththirak Koottam",
+          en: "Constellation",
+        },
+      ];
+
+      // Deterministic date key for Singapore time, format YYYY-MM-DD
+      function sgDateKey() {
+        const d = new Date();
+        return d.toLocaleDateString("en-CA", { timeZone: "Asia/Singapore" });
+        // en-CA gives ISO-like YYYY-MM-DD, which is easy to hash
+      }
+
+      // FNV-1a hash, maps string to 32-bit unsigned integer
+      function fnv1a(str) {
+        let h = 0x811c9dc5;
+        for (let i = 0; i < str.length; i++) {
+          h ^= str.charCodeAt(i);
+          h = Math.imul(h, 0x01000193);
+        }
+        return h >>> 0;
+      }
+
+      function pickWordForDate(dateKey) {
+        const idx = fnv1a(dateKey) % WORDS.length;
+        return WORDS[idx];
+      }
+
+      function render() {
+        const key = sgDateKey();
+        const word = pickWordForDate(key);
+
+        // Display date in Singapore time for clarity
+        document.getElementById("dateLine").textContent =
+          new Date().toLocaleDateString("en-SG", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            timeZone: "Asia/Singapore",
+          });
+
+        document.getElementById("wordTa").textContent = word.ta;
+        document.getElementById(
+          "wordMeta"
+        ).textContent = `${word.tr} (${word.en})`;
+      }
+
+      async function copyWord() {
+        const ta = document.getElementById("wordTa").textContent.trim();
+        const meta = document.getElementById("wordMeta").textContent.trim();
+        const line = `${ta} - ${meta}`; // no em dashes
+        try {
+          await navigator.clipboard.writeText(line);
+          alert("Copied");
+        } catch {
+          const t = document.createElement("textarea");
+          t.value = line;
+          document.body.appendChild(t);
+          t.select();
+          document.execCommand("copy");
+          document.body.removeChild(t);
+          alert("Copied");
+        }
+      }
+
+      document.getElementById("copyBtn").addEventListener("click", copyWord);
+      render();
+    </script>
+  </body>
 </html>
